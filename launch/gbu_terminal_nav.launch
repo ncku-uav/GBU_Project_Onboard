@@ -1,0 +1,22 @@
+<launch>
+
+	<arg name="nav_param_file_name" default="nav_param" doc="Specify a param file. ex:megaman"/>
+	<arg name="nav_node_name" default="bombard_terminal_nav_node" doc="name of the node"/>
+	<arg name="nav_pkg_name" default="gbu_project" doc="name of the package"/>
+	<node  pkg="$(arg nav_pkg_name)" type="$(arg nav_node_name)" name="$(arg nav_node_name)" output="screen" clear_params="true" required="true">
+	    <rosparam command="load" file="$(find gbu_project)/config/$(arg nav_param_file_name).yaml"/>
+	 </node>
+
+     <arg name="gbu_param_file_name" default="gbu_release_calc" doc="Specify a param file. ex:megaman"/>
+	<arg name="gbu_node_name" default="gbu_release_node" doc="name of the node"/>
+	<arg name="gbu_pkg_name" default="gbu_project" doc="name of the package"/>
+	<node  pkg="$(arg gbu_pkg_name)" type="$(arg gbu_node_name).py" name="$(arg gbu_node_name)" output="screen" clear_params="true" required="true">
+	    <rosparam command="load" file="$(find gbu_project)/config/$(arg gbu_param_file_name).yaml"/>
+	 </node>
+
+    <node pkg="wgs_conversions" type="wgs_conversions_server" name="wgs_conversions_server" output="screen"/>
+	<node pkg="gbu_project" type="offb_global_node" name="offb_global_node" output="screen"/>
+
+
+
+</launch>
