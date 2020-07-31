@@ -37,6 +37,7 @@ class gbu_drop():
         self.alt = 0.0
         self.wpGps = GlobalPositionTarget()
         self.bomb_release = False
+        self.servo_delay = 0.125  # 1/8 secs
 
     def state_cb(self,state):        
         self.mode = state.mode
@@ -66,7 +67,9 @@ class gbu_drop():
             drag=0.5*self.air_density*self.area*(V**2)
             v = v +np.array([0,-self.g*self.dt,0] )- self.dt*drag/V/self.mass*v
             displacement_total +=np.dot(v,[1.0, 0.0 , 0.0])*self.dt
+            
             #print(h,self.alt)
+        displacement_total += self.vel[0] *self.servo_delay
 
         return displacement_total
 
@@ -110,7 +113,7 @@ def rot_pos(x,y,phi):
 if __name__ == '__main__':
     
     rospy.init_node('gbu_release_node', anonymous=False)
-    rate = rospy.Rate(10)# 10hz
+    rate = rospy.Rate(50)# 10hz
     n = gbu_drop()
     #j =1
     #wp = []
@@ -121,6 +124,14 @@ if __name__ == '__main__':
 
     bomb_status = Bool()
     bomb_status.data = n.bomb_release
+
+    # Send a servo lock signal
+    cmd = ActuatorControl()
+    cmd.group_mix = 1
+    cmd.controls[4] = -1
+    cmd.controls[5] = -1
+    n.cmd_pub.publish(cmd)
+    print("Release mechanism is LOCKED !")
     
 
     while not rospy.is_shutdown() :
@@ -154,11 +165,12 @@ if __name__ == '__main__':
                     n.bomb_status_pub.publish(bomb_status)
                     
                     
-                    cmd = ActuatorControl()
+                    #cmd = ActuatorControl()
                     cmd.group_mix = 1
                     cmd.controls[4] = 1 
                     cmd.controls[5] = 1
                     n.cmd_pub.publish(cmd)
+                    print("Bomb released ....")
                     break
 
     while n.bomb_release is True:

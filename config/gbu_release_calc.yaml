@@ -1,11 +1,11 @@
 #gbu_release_node
-g: 9                      
+g: 9.8                      
 air_drag_coe:  0.3  
-mass: 0.536
-area: 0.004
+mass: 0.78
+area: 0.0036
 air_density: 1.225
 dt: 0.01
 D: 10
-target: [22.9368267,120.2078323,129] # Long, Lat, Alt
+target: [22.9368324,120.2078247,50] # Long, Lat, Alt(Releated Alt)
 B: 1.2
 C: 10

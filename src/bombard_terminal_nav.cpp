@@ -26,7 +26,7 @@
 #include <math.h>
 #include "wgs_conversions/WgsConversion.h"
 
-#define TERMINAL_RADIUS 500  // When enter this circle, switch to off_board\
+#define TERMINAL_RADIUS 200  // When enter this circle, switch to off_board\
                             // guidance mode.
 
 
@@ -93,11 +93,11 @@ int main(int argc, char **argv) {
 
     double curr_lla[3],reference_lla[3],enu[3];
     int WP_interval[2]; // WP_r states for waypoint reached.
-    nh.param("bombard_terminal_nav_node/target_lat",reference_lla[0],47.3998222);
-    nh.param("bombard_terminal_nav_node/target_long",reference_lla[1],8.5446148);
-    nh.param("bombard_terminal_nav_node/target_alt",reference_lla[2],47.23);
-    nh.param("bombard_terminal_nav_node/target_pre_wp",WP_interval[0],1);
-    nh.param("bombard_terminal_nav_node/target_now_wp",WP_interval[1],2);
+    nh.param("bombard_terminal_nav_node/target_lat",reference_lla[0],23.1063974);
+    nh.param("bombard_terminal_nav_node/target_long",reference_lla[1],120.2105858);
+    nh.param("bombard_terminal_nav_node/target_alt",reference_lla[2],30.0);
+    nh.param("bombard_terminal_nav_node/target_pre_wp",WP_interval[0],7);
+    nh.param("bombard_terminal_nav_node/target_now_wp",WP_interval[1],8);
 
 
     bomb_released.data = false;
@@ -181,15 +181,18 @@ int main(int argc, char **argv) {
                 if( current_state.mode != "AUTO.MISSION" && set_mode_client.call(mission_set_mode)&&
                 mission_set_mode.response.mode_sent){
                     ROS_INFO("Mission enabled");
+                    break;
                 }
             }
         }
         ros::spinOnce();
-        ROS_INFO("current_WP %d, DIST %.2f, Released %s",(int) WP_List.current_seq,\
+        //ROS_INFO("current_WP %d, DIST %.2f, Released %s",(int) WP_List.current_seq,\
         H_DIST, bomb_released.data ? "true":"false");
         rate.sleep();
 
     }
+    ros::Duration(5.0).sleep();
+    while(bomb_released.data){}
 
     return 0;
 }

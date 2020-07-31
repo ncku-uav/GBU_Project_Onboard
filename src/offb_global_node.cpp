@@ -2,14 +2,20 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
+#include <mavros_msgs/Altitude.h>
 #include <mavros_msgs/GlobalPositionTarget.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <geographic_msgs/GeoPoseStamped.h>
+#include <std_msgs/Float64.h>
 
 // global variables
 mavros_msgs::State current_state;
 sensor_msgs::NavSatFix global_position;
+float homeAlt;
 bool global_position_received = false;
+bool home_alt_set = false;
+float amsl_alt = 0;
+
 
 // callback functions
 void globalPosition_cb(const sensor_msgs::NavSatFix::ConstPtr& msg) {
@@ -22,6 +28,18 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
 }
 
+void alt_cb(const mavros_msgs::Altitude::ConstPtr &msg){
+    amsl_alt = msg ->amsl;
+
+}
+
+void home_amsl_alt_set(void){
+    homeAlt = amsl_alt;
+    home_alt_set = true;
+}
+
+
+
 // main function
 int main(int argc, char **argv) {
     ros::init(argc, argv, "test");
@@ -30,6 +48,7 @@ int main(int argc, char **argv) {
     ros::ServiceClient arming_client = nh.serviceClient < mavros_msgs::CommandBool > ("mavros/cmd/arming");
     ros::ServiceClient set_mode_client = nh.serviceClient < mavros_msgs::SetMode > ("mavros/set_mode");
     ros::Subscriber state_sub = nh.subscribe < mavros_msgs::State > ("mavros/state", 10, state_cb);
+    ros::Subscriber alt_sub = nh.subscribe < mavros_msgs::Altitude> ("mavros/altitude",1,alt_cb);
     //ros::Subscriber global_pos_sub = nh.subscribe < sensor_msgs::NavSatFix > ("mavros/global_position/global", 1, globalPosition_cb);
     ros::Subscriber global_pos_sub = nh.subscribe < sensor_msgs::NavSatFix > ("mavros/global_position/global", 1, globalPosition_cb);
     ros::Publisher goal_pos_pub = nh.advertise < geographic_msgs::GeoPoseStamped > ("mavros/setpoint_position/global", 10);
@@ -54,6 +73,11 @@ int main(int argc, char **argv) {
     }
     ROS_INFO("GPS position received");
 
+    if(!home_alt_set){
+        home_amsl_alt_set();
+        printf("home alt is now set to %f", homeAlt);
+    }
+
     // set target position
     //mavros_msgs::GlobalPositionTarget goal_position;
     geographic_msgs::GeoPoseStamped goal_position;
@@ -63,7 +87,8 @@ int main(int argc, char **argv) {
 
     ros::param::get("/bombard_terminal_nav_node/target_lat",goal_position.pose.position.latitude);
     ros::param::get("/bombard_terminal_nav_node/target_long",goal_position.pose.position.longitude);
-    ros::param::get("/bombard_terminal_nav_node/target_alt",goal_position.pose.position.altitude);
+    ros::param::get("/bombard_terminal_nav_node/target_alt",goal_position.pose.position.altitude); // This is related alt.
+    goal_position.pose.position.altitude  = goal_position.pose.position.altitude + homeAlt;
 
 
     // send a few setpoints before starting
@@ -81,7 +106,7 @@ int main(int argc, char **argv) {
         goal_position.header.stamp = ros::Time::now();
         goal_pos_pub.publish(goal_position);
         ros::spinOnce();
-        ROS_INFO_THROTTLE(1, "At altitude %.2f", global_position.altitude);
+        //ROS_INFO("Goal altitude %.2f", goal_position.pose.position.altitude);
         rate.sleep();
     }
 
