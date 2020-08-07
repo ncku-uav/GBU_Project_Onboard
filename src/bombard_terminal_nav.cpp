@@ -26,7 +26,7 @@
 #include <math.h>
 #include "wgs_conversions/WgsConversion.h"
 
-#define TERMINAL_RADIUS 200  // When enter this circle, switch to off_board\
+#define TERMINAL_RADIUS 300  // When enter this circle, switch to off_board\
                             // guidance mode.
 
 
@@ -39,6 +39,7 @@ mavros_msgs::WaypointReached WP_reached;
 bool global_position_received = false;
 bool qg_wp_received = false;
 bool home_alt_set = false;
+bool offboard_once_flag = false;
 std_msgs::Bool bomb_released;
 std_msgs::Float64 homeAlt;
 using namespace std;
@@ -165,9 +166,13 @@ int main(int argc, char **argv) {
             if( H_DIST < TERMINAL_RADIUS &&\
             bomb_released.data == false && (int) WP_reached.wp_seq >= WP_interval[0]\
             && (int) WP_List.current_seq <= WP_interval[1]){
-                if( current_state.mode != "OFFBOARD" && set_mode_client.call(offb_set_mode) &&
-                offb_set_mode.response.mode_sent){
-                    ROS_INFO("Offboard enabled");
+                if( current_state.mode != "OFFBOARD" && !offboard_once_flag ){
+                    if( set_mode_client.call(offb_set_mode) && offb_set_mode.response.mode_sent){
+                        ROS_INFO("Offboard enabled");
+                        offboard_once_flag = true;
+
+                    }
+                    
                 }
                 /*while (!bomb_released.data && current_state.mode == "OFFBOARD"){
                     //ROS_INFO("waiting for bomb release.");
