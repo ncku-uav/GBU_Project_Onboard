@@ -6,6 +6,6 @@ area: 0.0036
 air_density: 1.225
 dt: 0.01
 D: 10
-target: [22.9368324,120.2078247,50] # Long, Lat, Alt(Releated Alt)
+target: [23.1065565,120.2105330,30] # Long, Lat, Alt(Releated Alt)
 B: 1.2
 C: 10
