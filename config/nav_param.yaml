@@ -1,6 +1,6 @@
 # bombard_termianl_nav_node
-target_lat: 23.1065565
-target_long: 120.2105330
+target_lat: 24.7279065
+target_long: 121.7482841
 target_alt: 30
-target_pre_wp: 3
-target_now_wp: 4 
+target_pre_wp: 14
+target_now_wp: 16

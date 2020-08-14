@@ -28,15 +28,25 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
 }
 
-void alt_cb(const mavros_msgs::Altitude::ConstPtr &msg){
-    amsl_alt = msg ->amsl;
-
-}
-
 void home_amsl_alt_set(void){
     homeAlt = amsl_alt;
     home_alt_set = true;
 }
+
+void alt_cb(const mavros_msgs::Altitude::ConstPtr &msg){
+    amsl_alt = msg ->amsl;
+    ROS_INFO("AMSL %f \n", amsl_alt);
+    if(!home_alt_set){
+      home_amsl_alt_set();
+      ROS_INFO("home alt is set to %f\n",amsl_alt);
+    }
+
+}
+
+//void home_amsl_alt_set(void){
+//    homeAlt = amsl_alt;
+//    home_alt_set = true;
+//}
 
 
 
@@ -73,11 +83,9 @@ int main(int argc, char **argv) {
     }
     ROS_INFO("GPS position received");
 
-    if(!home_alt_set){
-        home_amsl_alt_set();
-        printf("home alt is now set to %f", homeAlt);
-    }
-
+    //if(!home_alt_set){
+    //home_amsl_alt_set();
+   // printf("home alt is now set to %f", homeAlt);
     // set target position
     //mavros_msgs::GlobalPositionTarget goal_position;
     geographic_msgs::GeoPoseStamped goal_position;

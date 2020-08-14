@@ -37,7 +37,7 @@ class gbu_drop():
         self.alt = 0.0
         self.wpGps = GlobalPositionTarget()
         self.bomb_release = False
-        self.servo_delay = 0.125  # 1/8 secs
+        self.servo_delay = 0.5  #0.125  # 1/8 secs
 
     def state_cb(self,state):        
         self.mode = state.mode
